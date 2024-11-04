@@ -1,9 +1,16 @@
 version: '3'
 
 networks:
-  network:
+  mongo-network:
     external: true
-    name: 'network'
+    name: 'mongo-network'
+  redis-network:
+    external: true
+    name: 'redis-net'
+  api-network:
+    external: true
+    name: 'mongo-api-net'  
+
 
 services:
 
@@ -17,7 +24,8 @@ services:
     ports:
       - '9000:9000'
     networks:
-      - network
+      - api-network
+      - redis-network
     depends_on:
       - mongo
       - redis
@@ -29,9 +37,12 @@ services:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_ROOT_PASSWORD=password
     networks:
-      - network
+      - mongo-network
+      - api-network
     ports:
       - 27017:27017
+    volumes:
+      - ./db:/data/db
     
   mongo-express:
    image: mongo-express:1.0-20-alpine3.19
@@ -44,7 +55,7 @@ services:
     - ME_CONFIG_MONGODB_ADMINPASSWORD=password
     - ME_CONFIG_MONGODB_SERVER=mongo
    networks:
-    - network
+    - mongo-network
    depends_on:
     - mongo
     
@@ -52,4 +63,5 @@ services:
     image: redis:alpine
     container_name: redis
     networks:
-      - network
+      - redis-network
+
